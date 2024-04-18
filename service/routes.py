@@ -5,7 +5,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from . import app
 from service.appointments.appointments_service import AppointmentsService
 from service.auth.auth_service import AuthService, InvalidCredentialsError, DuplicateCredentialsError
-from service.auth.models import Models_user
+from service.auth.models import UserModel
 
 # Setup the Flask-JWT-Extended extension
 jwt = JWTManager(app)
@@ -31,7 +31,8 @@ def user_lookup_callback(_jwt_header, jwt_data):
         if the user has been deleted from the database).
     '''
     identity = jwt_data["sub"]
-    return Models_user.get_user().get(identity, None)
+    user = list(filter(lambda x: x["id"] == identity, UserModel().get_users()))[0]
+    return user
 
 # Auth
 @app.route('/login', methods=['POST'])

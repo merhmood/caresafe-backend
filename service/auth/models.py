@@ -15,3 +15,11 @@ class UserModel(db.Model):
  
     def __repr__(self):
         return f"{self.name}:{self.age}"
+
+class UserModel():
+    __users__ = []
+    
+    def get_users(self):
+        return self.__users__
+    def add_user(self, user):
+        self.__users__.append(user)
