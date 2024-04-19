@@ -19,7 +19,8 @@ def user_identity_lookup(user):
         Register a callback function that takes whatever object is passed in as the
         identity when creating JWTs and converts it to a JSON serializable format.
     '''
-    print(user)
+    if(user == None):
+        return None
     return user['id']
 
 @jwt.user_lookup_loader
@@ -31,6 +32,8 @@ def user_lookup_callback(_jwt_header, jwt_data):
         if the user has been deleted from the database).
     '''
     identity = jwt_data["sub"]
+    if(len(UserModel().get_users()) == 0):
+        return None
     user = list(filter(lambda x: x["id"] == identity, UserModel().get_users()))[0]
     return user
 
@@ -81,20 +84,19 @@ def appointments():
         Handles the request for adding, configuring and requesting
         for appointments
     '''
-    print(current_user.id)
     if (request.method == 'POST'):
         app.logger.info('request to add appointments')
         appointment = request.get_json()
-        return AppointmentsService.add(appointment)
+        return AppointmentsService.add(current_user["id"], appointment)
     
     elif (request.method == 'PUT'):
         app.logger.info('request to configure appointments')
         fields = request.get_json()
-        return AppointmentsService.configure(fields)
+        return AppointmentsService.configure(current_user["id"], fields)
     
     else:
         app.logger.info('request for appointments')
-        return AppointmentsService.appointments()
+        return AppointmentsService.appointments(current_user["id"])
     
 
 @app.errorhandler(MethodNotAllowed)

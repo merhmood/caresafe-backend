@@ -1,15 +1,16 @@
+from service.appointments.models import AppointmentsModel
+
 class AppointmentsService():
     @staticmethod
-    def add(appointment):
-        print(appointment)
-        return 'appointment added'
+    def add(userId, appointment):
+        AppointmentsModel().add_appointment(userId, appointment)
+        return 'appointment added successfully'
     
     @staticmethod
-    def configure(fields):
-        print(fields)
-        return 'appointment added'
+    def configure(userId, fields):
+        AppointmentsModel().configure_appointment(userId, fields)
+        return 'fields successfully configured'
     
     @staticmethod
-    def appointments():
-        print('appointments')
-        return 'appointments'
+    def appointments(userId):
+        return AppointmentsModel().get_appoinments(userId)
