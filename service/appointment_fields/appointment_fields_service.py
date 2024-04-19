@@ -1,11 +1,25 @@
-class AppointmentFields():
-    __configure_appoinments__ = []
+from service.appointment_fields.models import AppointmentFieldsModel
 
-    def get_appointment_fields(self, userId):
-        configure_appointment = list(filter(lambda x: x["userId"] == userId, self.__configure_appoinment__))
-        return configure_appointment
+class AppointmentFields():
+
+    @staticmethod
+    def get_appointment_fields(userId):
+        fields = AppointmentFieldsModel().get_fields()
+        user_fields = list(filter(lambda x: x["id"] == userId, fields))
+        user_field = user_fields[len(user_fields)-1]
+        result = []
+        for key in user_field:
+            result.append(user_field[key])
+        result.pop()
+        return result
     
-    def set_appointment_fields(self, userId, fields):
-        fields['userId'] = userId
-        self.__configure_appoinment__.append(fields)
-        return fields
+    @staticmethod
+    def set_appointment_fields(userId, fields):
+        AppointmentFieldsModel().remove_field(userId)
+        new_field = {}
+        for field in fields:
+            new_field[field] = field
+        new_field['id'] = userId
+        AppointmentFieldsModel().add_field(new_field)
+        print(new_field)
+        return "success"

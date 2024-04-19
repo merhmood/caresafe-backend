@@ -4,6 +4,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 
 from . import app
 from service.appointments.appointments_service import AppointmentsService
+from service.appointment_fields.appointment_fields_service import AppointmentFields
 from service.auth.auth_service import AuthService, InvalidCredentialsError, DuplicateCredentialsError
 from service.auth.models import UserModel
 
@@ -97,13 +98,17 @@ def appointment_fields():
     '''
         Handles the request for configuring and retrieving of appointment fields
     '''
+    print(current_user["id"])
     if (request.method == 'PUT'):
         app.logger.info('request to add appointments')
-        appointment = request.get_json()
-        return AppointmentsService.add(current_user["id"], appointment)
+        fields = request.get_json()
+        print(fields)
+        AppointmentFields().set_appointment_fields(current_user["id"], fields)
+        return  AppointmentFields().get_appointment_fields(current_user["id"])
     else:
+        print("ran")
         app.logger.info('request for appointments')
-        return AppointmentsService.appointments(current_user["id"])
+        return AppointmentFields().get_appointment_fields(current_user["id"])
     
 
 @app.errorhandler(MethodNotAllowed)

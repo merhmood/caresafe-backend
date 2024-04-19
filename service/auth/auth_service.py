@@ -51,4 +51,4 @@ class AuthService():
         newUser.pop("confirmPassword")
         newUser["id"] = id
         UserModel().add_user(newUser)
-        AppointmentFields().set_appointment_fields(id, defaultAppointmentFields)
+        AppointmentFields().set_appointment_fields(newUser["id"], defaultAppointmentFields)
