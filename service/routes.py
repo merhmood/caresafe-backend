@@ -1,6 +1,6 @@
-from flask import request, jsonify
-from werkzeug.exceptions import MethodNotAllowed, NotFound, InternalServerError
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_jwt_cookies, current_user
+from flask import request, jsonify # type: ignore
+from werkzeug.exceptions import MethodNotAllowed, NotFound, InternalServerError # type: ignore
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_jwt_cookies, current_user # type: ignore
 
 from . import app
 from service.appointments.appointments_service import AppointmentsService
@@ -9,8 +9,6 @@ from service.auth.models import UserModel
 
 # Setup the Flask-JWT-Extended extension
 jwt = JWTManager(app)
-
-
 
 # JWT Callbacks
 @jwt.user_identity_loader
@@ -77,23 +75,32 @@ def signup():
     return jsonify({'msg': 'signup succesful'})
 
 # Appointments
-@app.route('/appointments', methods=['POST', 'PUT', 'GET'])
+@app.route('/appointments', methods=['POST', 'GET'])
 @jwt_required()
 def appointments():
     '''
-        Handles the request for adding, configuring and requesting
+        Handles the request for adding and retrieving appointments
         for appointments
     '''
     if (request.method == 'POST'):
         app.logger.info('request to add appointments')
         appointment = request.get_json()
         return AppointmentsService.add(current_user["id"], appointment)
-    
-    elif (request.method == 'PUT'):
-        app.logger.info('request to configure appointments')
-        fields = request.get_json()
-        return AppointmentsService.configure(current_user["id"], fields)
-    
+    else:
+        app.logger.info('request for appointments')
+        return AppointmentsService.appointments(current_user["id"])
+
+# Appointment fields
+@app.route('/appointment-fields', methods=['PUT', 'GET'])
+@jwt_required()
+def appointment_fields():
+    '''
+        Handles the request for configuring and retrieving of appointment fields
+    '''
+    if (request.method == 'PUT'):
+        app.logger.info('request to add appointments')
+        appointment = request.get_json()
+        return AppointmentsService.add(current_user["id"], appointment)
     else:
         app.logger.info('request for appointments')
         return AppointmentsService.appointments(current_user["id"])

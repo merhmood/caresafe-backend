@@ -3,14 +3,12 @@ from service.appointments.models import AppointmentsModel
 class AppointmentsService():
     @staticmethod
     def add(userId, appointment):
-        AppointmentsModel().add_appointment(userId, appointment)
+        new_appointment = appointment
+        new_appointment['userId'] = userId
+        AppointmentsModel().add_appointment(new_appointment)
         return 'appointment added successfully'
     
     @staticmethod
-    def configure(userId, fields):
-        AppointmentsModel().configure_appointment(userId, fields)
-        return 'fields successfully configured'
-    
-    @staticmethod
     def appointments(userId):
-        return AppointmentsModel().get_appoinments(userId)
+        appointments = list(filter(lambda x: x["userId"] == userId, AppointmentsModel().get_appoinments()))
+        return appointments

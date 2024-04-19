@@ -1,6 +1,7 @@
 import uuid
 from service.auth.models import UserModel
 from service.appointments.models import AppointmentsModel
+from service.appointment_fields.appointment_fields_service import AppointmentFields
 
 class InvalidCredentialsError(Exception):
     def __init__(self, message):
@@ -50,4 +51,4 @@ class AuthService():
         newUser.pop("confirmPassword")
         newUser["id"] = id
         UserModel().add_user(newUser)
-        AppointmentsModel().configure_appointment(id, defaultAppointmentFields)
+        AppointmentFields().set_appointment_fields(id, defaultAppointmentFields)
