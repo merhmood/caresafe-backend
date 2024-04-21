@@ -12,6 +12,7 @@ Flask-Cors
 flask-jwt-extended
 uuid
 flask-socketio
+fuzzywuzzy
 
 # Runtime dependencies
 gunicorn

@@ -11,4 +11,5 @@ class AppointmentsService():
     @staticmethod
     def appointments(userId):
         appointments = list(filter(lambda x: x["userId"] == userId, AppointmentsModel().get_appoinments()))
+        print(appointments)
         return appointments

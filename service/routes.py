@@ -1,8 +1,11 @@
 from flask import request, jsonify # type: ignore
 from werkzeug.exceptions import MethodNotAllowed, NotFound, InternalServerError # type: ignore
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_jwt_cookies, current_user # type: ignore
+from flask_socketio import emit
 
 from . import app
+from . import socketio
+from service.search.search_service import SearchService
 from service.appointments.appointments_service import AppointmentsService
 from service.appointment_fields.appointment_fields_service import AppointmentFields
 from service.auth.auth_service import AuthService, InvalidCredentialsError, DuplicateCredentialsError
@@ -52,7 +55,7 @@ def login():
     except InvalidCredentialsError as e:
         return jsonify({'message':e.message}), 401
     access_token = create_access_token(identity=user)
-    return jsonify(access_token=access_token)
+    return jsonify(access_token=access_token, user=user["id"])
 
 @app.route("/logout", methods=["POST"])
 def logout_with_cookies():
@@ -75,21 +78,33 @@ def signup():
         return jsonify({'message':e.message}), 409
     return jsonify({'msg': 'signup succesful'})
 
-# Appointments
-@app.route('/appointments', methods=['POST', 'GET'])
-@jwt_required()
-def appointments():
+# Appointments socket
+@socketio.on('appointments')
+def appointments(json):
     '''
         Handles the request for adding and retrieving appointments
         for appointments
     '''
-    if (request.method == 'POST'):
-        app.logger.info('request to add appointments')
-        appointment = request.get_json()
-        return AppointmentsService.add(current_user["id"], appointment)
-    else:
-        app.logger.info('request for appointments')
-        return AppointmentsService.appointments(current_user["id"])
+    print(str(json))
+    app.logger.info('request to add appointments')
+    appointment = json[0]
+    user_id = json[1]
+    AppointmentsService.add(user_id, appointment)
+    emit('appointments', [AppointmentsService.appointments(user_id), user_id], broadcast=True)
+
+@app.route('/appointments')
+@jwt_required()
+def appointments():
+    '''
+        Handles the request for retrieving appointments when user 
+        signins in for the first time on a different device manchine
+    '''
+    app.logger.info('request for appointments')
+    response = AppointmentsService.appointments(current_user["id"])
+    print("response for fetch appointment")
+    print(response)
+    return jsonify(response)
+
 
 # Appointment fields
 @app.route('/appointment-fields', methods=['PUT', 'GET'])
@@ -109,6 +124,15 @@ def appointment_fields():
         print("ran")
         app.logger.info('request for appointments')
         return AppointmentFields().get_appointment_fields(current_user["id"])
+
+@app.route('/search', methods=['POST'])
+def search():
+    '''
+        Handles the request for searching appointments
+    '''
+    search_term = request.get_json()
+    app.logger.info('request to search appointments')
+    return jsonify(SearchService.search_service(search_term))
     
 
 @app.errorhandler(MethodNotAllowed)
