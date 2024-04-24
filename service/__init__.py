@@ -11,7 +11,7 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:3000", "http://localhost:3001"], supports_credentials=True)
+CORS(app, origins=["http://localhost:3000", "http://localhost:3001", "https://omnihale.com", "https://business.omnihale.com"], supports_credentials=True)
 app.config['JWT_SECRET_KEY'] = environ.get('JWT_SECRET_KEY')
 # configure the SQLite database, relative to the app instance folder
 app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:Adinoyi2@localhost:5432/dev"
@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 
 # cors
 
-socketio = SocketIO(app, cors_allowed_origins=["http://localhost:3000", "http://localhost:3001"])
+socketio = SocketIO(app, cors_allowed_origins=["http://localhost:3000", "http://localhost:3001", "https://omnihale.com", "https://business.omnihale.com"])
 
 
 if __name__ == '__main__':

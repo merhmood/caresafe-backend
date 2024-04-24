@@ -132,7 +132,10 @@ def search():
     '''
     search_term = request.get_json()
     app.logger.info('request to search appointments')
-    return jsonify(SearchService.search_service(search_term))
+    results = SearchService.search_service(search_term["search"])
+    print("search results")
+    print(results)
+    return jsonify(results)
     
 
 @app.errorhandler(MethodNotAllowed)

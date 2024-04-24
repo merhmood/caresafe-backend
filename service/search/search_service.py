@@ -13,11 +13,12 @@ class SearchService:
                     results.append(item)
                     break
         print("search results")
-        new_result = []
-        for result in results:
-            len_appointments = len(list(filter(lambda x: x['userId'] == result['id'], AppointmentsService.appointments(result['id']))))
-            result['appointments'] = len_appointments
-            result['fields'] = AppointmentFields().get_appointment_fields(result['id'])
-            new_result.append(result)
-        print(results)
-        return results
+        new_results = []
+        if(len(results) > 0):
+            for result in results:
+                len_appointments = len(list(filter(lambda x: x['userId'] == result['id'], AppointmentsService.appointments(result['id']))))
+                result['appointments'] = len_appointments
+                result['fields'] = AppointmentFields().get_appointment_fields(result['id'])
+                new_results.append(result)
+            print(new_results)
+        return new_results
