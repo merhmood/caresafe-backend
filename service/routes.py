@@ -1,13 +1,14 @@
 import logging
-from flask import request, jsonify
-from werkzeug.exceptions import MethodNotAllowed, NotFound, InternalServerError
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_jwt_cookies, current_user
-from flask_socketio import emit
+from flask import request, jsonify # type: ignore
+from werkzeug.exceptions import MethodNotAllowed, NotFound, InternalServerError # type: ignore
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_jwt_cookies, current_user # type: ignore
+from flask_socketio import emit # type: ignore
+
 from . import app
 from . import socketio
 from service.search.search_service import SearchService
 from service.appointments.appointments_service import AppointmentsService
-from service.appointment_fields.appointment_fields_service import AppointmentFields
+from service.configure_appointments.configure_appointments import ConfigureAppointments
 from service.auth.auth_service import AuthService, InvalidCredentialsError, DuplicateCredentialsError
 from service.auth.models import UserModel
 
@@ -140,6 +141,7 @@ def get_appointments():
     """
     app.logger.info('request for appointments')
     response = AppointmentsService.appointments(current_user["id"])
+    print(response)
     return jsonify(response)
 
 # Appointment fields
@@ -166,11 +168,11 @@ def appointment_fields():
     if request.method == 'PUT':
         app.logger.info('request to add appointments')
         fields = request.get_json()
-        AppointmentFields().set_appointment_fields(current_user["id"], fields)
-        return AppointmentFields().get_appointment_fields(current_user["id"])
+        ConfigureAppointments().set_appointment_fields(current_user["id"], fields)
+        return ConfigureAppointments().get_appointment_fields(current_user["id"])
     else:
         app.logger.info('request for appointments')
-        return AppointmentFields().get_appointment_fields(current_user["id"])
+        return ConfigureAppointments().get_appointment_fields(current_user["id"])
 
 @app.route('/search', methods=['GET'])
 def search():

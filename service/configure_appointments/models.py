@@ -1,4 +1,4 @@
-class AppointmentFieldsModel():
+class ConfigureAppointmentsModel():
     __fields__ = []
     def get_fields(self):
         return self.__fields__

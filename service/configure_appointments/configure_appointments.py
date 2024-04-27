@@ -1,11 +1,10 @@
-from service.appointment_fields.models import AppointmentFieldsModel
-
-class AppointmentFields():
+from service.configure_appointments.models import ConfigureAppointmentsModel
+class ConfigureAppointments():
 
     @staticmethod
     def get_appointment_fields(userId):
         # Get all fields from the model
-        fields = AppointmentFieldsModel().get_fields()
+        fields = ConfigureAppointmentsModel().get_fields()
         
         # Filter the fields to get only the ones belonging to the user
         user_fields = list(filter(lambda x: x["id"] == userId, fields))
@@ -28,7 +27,7 @@ class AppointmentFields():
     @staticmethod
     def set_appointment_fields(userId, fields):
         # Remove any existing field for the user
-        AppointmentFieldsModel().remove_field(userId)
+        ConfigureAppointmentsModel().remove_field(userId)
         
         new_field = {}
         
@@ -40,7 +39,7 @@ class AppointmentFields():
         new_field['id'] = userId
         
         # Add the new field to the model
-        AppointmentFieldsModel().add_field(new_field)
+        ConfigureAppointmentsModel().add_field(new_field)
         
         # Remove the "userId" key from the new_field dictionary
         if "userId" in new_field:

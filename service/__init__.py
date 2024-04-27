@@ -1,9 +1,9 @@
-from flask import Flask
-from flask_cors import CORS
+from flask import Flask # type: ignore
+from flask_cors import CORS # type: ignore
 from os import environ
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
-from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy # type: ignore
+from sqlalchemy.orm import DeclarativeBase # type: ignore
+from flask_socketio import SocketIO # type: ignore
 
 class Base(DeclarativeBase):
   pass

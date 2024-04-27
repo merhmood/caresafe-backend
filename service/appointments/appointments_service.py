@@ -5,6 +5,16 @@ from service.appointments.models import AppointmentsModel
 class AppointmentsService():
     @staticmethod
     def add(userId, appointment):
+        """
+        Adds a new appointment for a given user.
+
+        Args:
+            userId (int): The ID of the user.
+            appointment (dict): The appointment details.
+
+        Returns:
+            str: A success message indicating that the appointment was added successfully.
+        """
         # Add userId to the appointment
         appointment['userId'] = userId
         
@@ -19,6 +29,33 @@ class AppointmentsService():
     
     @staticmethod
     def appointments(userId):
+        """
+        Retrieve and organize appointments for a specific user.
+
+        Args:
+            userId (int): The ID of the user.
+
+        Returns:
+            list: A list of dictionaries representing grouped appointments, sorted by date in descending order.
+
+        Example:
+            >>> appointments(123)
+            [
+                {
+                    'date': '2022-01-01',
+                    'appointments': [
+                        {'id': 1, 'userId': 123, 'date': '2022-01-01', 'time': '09:00'},
+                        {'id': 2, 'userId': 123, 'date': '2022-01-01', 'time': '10:00'}
+                    ]
+                },
+                {
+                    'date': '2022-01-02',
+                    'appointments': [
+                        {'id': 3, 'userId': 123, 'date': '2022-01-02', 'time': '14:00'}
+                    ]
+                }
+            ]
+        """
         # Get all appointments
         appointments = AppointmentsModel().get_appoinments()
         
@@ -33,11 +70,24 @@ class AppointmentsService():
         for date, group in groupby(appointments, key=lambda x: x['date']):
             grouped_appointments.append({'date': date, 'appointments': list(group)})
         
-        # Return grouped appointments
-        return grouped_appointments
+        # Reverse the order of appointments within each group
+        reversed_grouped_appointments = []
+        for group_appointment in grouped_appointments:
+            group_appointment["appointments"].reverse()
+            reversed_grouped_appointments.append(group_appointment)
+        # Reverse the order of reversed_grouped_appointments
+        reversed_grouped_appointments.reverse()
+        # Return reversed grouped appointments
+        return reversed_grouped_appointments
     
     @staticmethod
     def get_formatted_date():
+        """
+        Get the current date and format it as a string.
+
+        Returns:
+            str: The formatted date string in the format "day Month, Year".
+        """
         # Get current date and time
         now = datetime.now()
         

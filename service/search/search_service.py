@@ -1,7 +1,7 @@
-from fuzzywuzzy import fuzz
+from fuzzywuzzy import fuzz # type: ignore
 from service.search.models import SearchModel
 from service.appointments.appointments_service import AppointmentsService
-from service.appointment_fields.appointment_fields_service import AppointmentFields
+from service.configure_appointments.configure_appointments import ConfigureAppointments
 from service.appointments.appointments_service import AppointmentsService
 
 class SearchService:
@@ -35,10 +35,10 @@ class SearchService:
                     today_appointments = list(filter(lambda x: x['date'] == today, appointments))[0]
                     len_appointments = len(today_appointments["appointments"])
                     result['appointments'] = len_appointments
-                    result['fields'] = AppointmentFields().get_appointment_fields(result['id'])
+                    result['fields'] = ConfigureAppointments().get_appointment_fields(result['id'])
                 else:
                     result['appointments'] = 0
-                    result['fields'] = AppointmentFields().get_appointment_fields(result['id'])
+                    result['fields'] = ConfigureAppointments().get_appointment_fields(result['id'])
                 
                 new_results.append(result)
             
