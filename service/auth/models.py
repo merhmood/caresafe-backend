@@ -1,25 +1,19 @@
-from flask_sqlalchemy import SQLAlchemy
- 
-db = SQLAlchemy()
- 
-class UserModel(db.Model):
-    __tablename__ = 'user'
- 
-    id = db.Column(db.Integer, primary_key = True)
-    name = db.Column(db.String())
-    age = db.Column(db.Integer())
- 
-    def __init__(self, name,age):
-        self.name = name
-        self.age = age
- 
-    def __repr__(self):
-        return f"{self.name}:{self.age}"
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
+from service.routes import db
 
-class UserModel():
-    __users__ = []
-    
-    def get_users(self):
-        return self.__users__
-    def add_user(self, user):
-        self.__users__.append(user)
+
+class User(db.Model):
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    name = db.Column(db.String(150), unique=True, nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    state = db.Column(db.String(120), nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+
+    def __init__(self, name, state, address, email, password):
+        self.name = name
+        self.address = address
+        self.state = state
+        self.email = email
+        self.password = password

@@ -1,16 +1,17 @@
 import logging
-from flask import request, jsonify # type: ignore
-from werkzeug.exceptions import MethodNotAllowed, NotFound, InternalServerError # type: ignore
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_jwt_cookies, current_user # type: ignore
-from flask_socketio import emit # type: ignore
+from flask import request, jsonify 
+from werkzeug.exceptions import MethodNotAllowed, NotFound, InternalServerError
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_jwt_cookies, current_user 
+from flask_socketio import emit 
 
 from . import app
 from . import socketio
+from . import db # make database available to the model files
 from service.search.search_service import SearchService
 from service.appointments.appointments_service import AppointmentsService
-from service.configure_appointments.configure_appointments import ConfigureAppointments
+from service.configure_appointments.configure_appointments_service import ConfigureAppointmentsService
 from service.auth.auth_service import AuthService, InvalidCredentialsError, DuplicateCredentialsError
-from service.auth.models import UserModel
+from service.auth.models import User
 
 # Setup the Flask-JWT-Extended extension
 jwt = JWTManager(app)
@@ -22,37 +23,12 @@ logger = logging.getLogger(__name__)
 # JWT Callbacks
 @jwt.user_identity_loader
 def user_identity_lookup(user):
-    """
-    Returns the user's identity.
-
-    Args:
-        user (dict): The user object.
-
-    Returns:
-        int: The user's ID.
-
-    """
-    if user is None:
-        return None
-    return user['id']
+    return user.id
 
 @jwt.user_lookup_loader
 def user_lookup_callback(_jwt_header, jwt_data):
-    """
-    Callback function for looking up a user based on JWT data.
-
-    Args:
-        _jwt_header (dict): The JWT header.
-        jwt_data (dict): The JWT data.
-
-    Returns:
-        dict or None: The user dictionary if found, None otherwise.
-    """
     identity = jwt_data["sub"]
-    if len(UserModel().get_users()) == 0:
-        return None
-    user = list(filter(lambda x: x["id"] == identity, UserModel().get_users()))[0]
-    return user
+    return User.query.filter_by(id=identity).one_or_none()
 
 # Auth
 @app.route('/login', methods=['POST'])
@@ -77,7 +53,7 @@ def login():
     except InvalidCredentialsError as e:
         return jsonify({'message': e.message}), 401
     access_token = create_access_token(identity=user)
-    return jsonify(access_token=access_token, user=user["id"])
+    return jsonify(access_token=access_token, user=user.id)
 
 @app.route("/logout", methods=["POST"])
 def logout_with_cookies():
@@ -140,7 +116,7 @@ def get_appointments():
         A JSON response containing the appointments for the current user.
     """
     app.logger.info('request for appointments')
-    response = AppointmentsService.appointments(current_user["id"])
+    response = AppointmentsService.appointments(current_user.id)
     print(response)
     return jsonify(response)
 
@@ -168,11 +144,13 @@ def appointment_fields():
     if request.method == 'PUT':
         app.logger.info('request to add appointments')
         fields = request.get_json()
-        ConfigureAppointments().set_appointment_fields(current_user["id"], fields)
-        return ConfigureAppointments().get_appointment_fields(current_user["id"])
+        ConfigureAppointmentsService.set_appointment_fields(current_user.id, fields)
+        return ConfigureAppointmentsService.get_appointment_fields(current_user.id)
     else:
         app.logger.info('request for appointments')
-        return ConfigureAppointments().get_appointment_fields(current_user["id"])
+        result = ConfigureAppointmentsService.get_appointment_fields(current_user.id)
+        print(result)
+        return result
 
 @app.route('/search', methods=['GET'])
 def search():

@@ -1,6 +1,7 @@
 from datetime import datetime
 from itertools import groupby
-from service.appointments.models import AppointmentsModel
+from  service.routes import db
+from service.appointments.models import Appointments
 
 class AppointmentsService():
     @staticmethod
@@ -15,20 +16,20 @@ class AppointmentsService():
         Returns:
             str: A success message indicating that the appointment was added successfully.
         """
-        # Add userId to the appointment
-        appointment['userId'] = userId
         
         # Get the formatted date
         appointment['date'] = AppointmentsService.get_formatted_date()
         
-        # Add the appointment to the AppointmentsModel
-        AppointmentsModel().add_appointment(appointment)
+        # Create a new Appointment object and add it to the database
+        new_appointment = Appointments(user_id=userId, appointments=appointment)
+        db.session.add(new_appointment)
+        db.session.commit()
         
         # Return success message
         return 'appointment added successfully'
     
     @staticmethod
-    def appointments(userId):
+    def appointments(user_id):
         """
         Retrieve and organize appointments for a specific user.
 
@@ -56,11 +57,11 @@ class AppointmentsService():
                 }
             ]
         """
-        # Get all appointments
-        appointments = AppointmentsModel().get_appoinments()
-        
-        # Filter appointments by userId
-        appointments = [appointment for appointment in appointments if appointment["userId"] == userId]
+       # Query the database for appointments for the user
+        appointments = Appointments.query.filter_by(user_id=user_id).all()
+
+        # Convert the appointments to a list of dictionaries
+        appointments = [appointment.appointments for appointment in appointments]
         
         # Sort appointments by date
         appointments.sort(key=lambda x: x['date'])
@@ -75,8 +76,7 @@ class AppointmentsService():
         for group_appointment in grouped_appointments:
             group_appointment["appointments"].reverse()
             reversed_grouped_appointments.append(group_appointment)
-        # Reverse the order of reversed_grouped_appointments
-        reversed_grouped_appointments.reverse()
+             
         # Return reversed grouped appointments
         return reversed_grouped_appointments
     

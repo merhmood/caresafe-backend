@@ -1,7 +1,7 @@
-import uuid
-from service.auth.models import UserModel
-from service.appointments.models import AppointmentsModel
-from service.configure_appointments.configure_appointments import ConfigureAppointments
+from werkzeug.security import generate_password_hash, check_password_hash
+from service.routes import db
+from service.auth.models import User
+from service.configure_appointments.configure_appointments_service import ConfigureAppointmentsService
 
 class InvalidCredentialsError(Exception):
     def __init__(self, message):
@@ -19,50 +19,39 @@ class AuthService():
         email = userInfo['login']['email']
         password = userInfo['login']['password']
         
-        # Get all users
-        users = UserModel().get_users()
+       # Query the database for the user with the specified email
+        user = User.query.filter_by(email=email).first()
         
-        if(len(users) == 0):
+        if user is None:
             # No user found
             raise InvalidCredentialsError('No user found')
         
-        if(len(users) > 0):
-            # Check if user exists
-            user = list(filter(lambda x: x["email"] == email and x["password"] == password, users))
-            
-            # If user exists, return user
-            if(len(user) > 0):
-                return user[0]
-            
-            # If user does not exist, raise error
-            else:
-                raise InvalidCredentialsError('Wrong email or password')
-                
+        # Check if the password is correct
+        if not check_password_hash(user.password, password):
+            # Invalid password
+            raise InvalidCredentialsError('Invalid password')
+        
+        # User found and password is correct
+        return user
     
     def signUp(userInfo: dict):
         newUser:dict = userInfo['signUp']
         
-        # Check if user already exists
-        for user in UserModel().get_users():
-            if(user["email"] == newUser["email"] or user["name"] == newUser["name"]):
-                # If user exists, raise error
-                raise DuplicateCredentialsError("information already exist")
-        
-        id = str(uuid.uuid4())
-        
-        # Creates default appointment fields for new user
-        defaultAppointmentFields = {
-            "userId": id,
-            "name": "",
-            "address": "",
-        }
-        
-        # Removes confirmPassword field from newUser
-        newUser.pop("confirmPassword")
-        newUser["id"] = id
-        
-        # Add new user to UserModel
-        UserModel().add_user(newUser)
-        
-        # Set appointment fields for new user
-        ConfigureAppointments().set_appointment_fields(newUser["id"], defaultAppointmentFields)
+               # Check if user already exists
+        existing_user = User.query.filter((User.email == newUser["email"]) | (User.name == newUser["name"])).first()
+        if existing_user is not None:
+            # If user exists, raise error
+            raise DuplicateCredentialsError("information already exist")
+
+        # Hash the password
+        hashed_password = generate_password_hash(newUser['password'], method='pbkdf2:sha256')
+
+        # Create a new User object and add it to the database
+        new_user = User(name=newUser['name'], state=newUser['state'], address=newUser['address'], email=newUser['email'], password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        ConfigureAppointmentsService().set_appointment_fields(new_user.id, ["name", "address"])
+
+        # User created successfully
+        return 'User created successfully'
