@@ -63,8 +63,8 @@ class AppointmentsService():
         # Convert the appointments to a list of dictionaries
         appointments = [appointment.appointments for appointment in appointments]
         
-        # Sort appointments by date
-        appointments.sort(key=lambda x: x['date'])
+        # # Sort appointments by date
+        # appointments.sort(key=lambda x: x['date'])
         
         # Group appointments by date
         grouped_appointments = []
@@ -76,8 +76,9 @@ class AppointmentsService():
         for group_appointment in grouped_appointments:
             group_appointment["appointments"].reverse()
             reversed_grouped_appointments.append(group_appointment)
-             
+ 
         # Return reversed grouped appointments
+        reversed_grouped_appointments.reverse()
         return reversed_grouped_appointments
     
     @staticmethod

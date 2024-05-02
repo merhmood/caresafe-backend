@@ -88,6 +88,14 @@ def signup():
         return jsonify({'message': e.message}), 409
     return jsonify({'msg': 'signup successful'})
 
+
+# on user connection
+@socketio.on("initial-appointments")
+def get_appointments(json):
+    user_id = json
+    emit('appointments', [AppointmentsService.appointments(user_id), user_id], broadcast=True)
+
+
 # Appointments socket
 @socketio.on('appointments')
 def appointments(json):
@@ -106,19 +114,6 @@ def appointments(json):
     AppointmentsService.add(user_id, appointment)
     emit('appointments', [AppointmentsService.appointments(user_id), user_id], broadcast=True)
 
-@app.route('/appointments')
-@jwt_required()
-def get_appointments():
-    """
-    Retrieves appointments for the current user.
-
-    Returns:
-        A JSON response containing the appointments for the current user.
-    """
-    app.logger.info('request for appointments')
-    response = AppointmentsService.appointments(current_user.id)
-    print(response)
-    return jsonify(response)
 
 # Appointment fields
 @app.route('/appointment-fields', methods=['PUT', 'GET'])
