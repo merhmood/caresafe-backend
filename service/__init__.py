@@ -15,7 +15,7 @@ app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000", "http://localhost:3001", "https://omnihale.com", "https://business.omnihale.com"], supports_credentials=True)
 app.config['JWT_SECRET_KEY'] = environ.get('JWT_SECRET_KEY')
 # configure the SQLite database, relative to the app instance folder
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://myuser:mypassword@localhost:5432/mydatabase'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://myuser:mypassword@localhost:5432/omnihale'
 # initialize the app with the extension
 db.init_app(app)
 migrate = Migrate(app, db)
