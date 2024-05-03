@@ -62,9 +62,7 @@ class AppointmentsService():
 
         # Convert the appointments to a list of dictionaries
         appointments = [appointment.appointments for appointment in appointments]
-        
-        # # Sort appointments by date
-        # appointments.sort(key=lambda x: x['date'])
+
         
         # Group appointments by date
         grouped_appointments = []
