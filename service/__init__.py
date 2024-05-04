@@ -1,4 +1,5 @@
-from flask import Flask 
+from flask import Flask
+import signal 
 from flask_cors import CORS 
 from os import environ
 from flask_sqlalchemy import SQLAlchemy 
@@ -27,6 +28,29 @@ with app.app_context():
     db.create_all()
 
 socketio = SocketIO(app, cors_allowed_origins=["http://localhost:3000", "http://localhost:3001", "https://omnihale.com", "https://business.omnihale.com"])
+
+
+@socketio.on('connect')
+def handle_connect():
+    print('Client connected')
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print('Client disconnected')
+
+@socketio.on_error()  # Handles all socket errors
+def handle_socket_error(e):
+    print('Socket error occurred:', e)
+
+def handle_shutdown(signum, frame):
+    print('Shutting down...')
+    socketio.close_room('/')  # Close all connections
+    exit(0)
+
+signal.signal(signal.SIGINT, handle_shutdown)
+signal.signal(signal.SIGTERM, handle_shutdown)
+
+
 
 
 if __name__ == '__main__':
