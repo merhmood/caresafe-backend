@@ -147,6 +147,16 @@ def appointment_fields():
         print(result)
         return result
 
+@app.route('/profile', methods=['GET', 'PUT'])
+def userProfile():
+    """
+    Endpoint for User Profile
+    """
+    if request.method == 'GET':
+        app.logger.info('request for user profile')
+        
+
+
 @app.route('/search', methods=['GET'])
 def search():
     """
