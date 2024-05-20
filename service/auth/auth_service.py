@@ -2,6 +2,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from service.routes import db
 from service.auth.models import User
 from service.configure_appointments.configure_appointments_service import ConfigureAppointmentsService
+from service.profile.profile_service import ProfileService
 
 class InvalidCredentialsError(Exception):
     def __init__(self, message):
@@ -51,7 +52,8 @@ class AuthService():
         db.session.add(new_user)
         db.session.commit()
 
-        ConfigureAppointmentsService().set_appointment_fields(new_user.id, ["name", "address"])
+        ConfigureAppointmentsService.set_appointment_fields(new_user.id, ["name", "address"])
+        ProfileService.create_profile(user_id=new_user.id, name=new_user.name, address=new_user.address)
 
         # User created successfully
         return 'User created successfully'

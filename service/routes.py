@@ -10,6 +10,7 @@ from . import db # make database available to the model files
 from service.search.search_service import SearchService
 from service.appointments.appointments_service import AppointmentsService
 from service.configure_appointments.configure_appointments_service import ConfigureAppointmentsService
+from service.profile.profile_service import ProfileService
 from service.auth.auth_service import AuthService, InvalidCredentialsError, DuplicateCredentialsError
 from service.auth.models import User
 
@@ -148,13 +149,18 @@ def appointment_fields():
         return result
 
 @app.route('/profile', methods=['GET', 'PUT'])
+@jwt_required()
 def userProfile():
     """
     Endpoint for User Profile
     """
-    if request.method == 'GET':
+    if request.method == 'PUT':
+        new_profile_details = request.get_json()
+        return ProfileService.update_profile_details(user_id=current_user.id, new_profile_details=new_profile_details)
+    else:
         app.logger.info('request for user profile')
-        
+        return ProfileService.get_profile_details(current_user.id)
+    
 
 
 @app.route('/search', methods=['GET'])
