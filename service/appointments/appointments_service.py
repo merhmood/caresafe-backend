@@ -2,10 +2,11 @@ from datetime import datetime
 from itertools import groupby
 from  service.routes import db
 from service.appointments.models import Appointments
+from service.profile.profile_service import ProfileService
 
 class AppointmentsService():
     @staticmethod
-    def add(userId, appointment):
+    def add(user_id, appointment, role):
         """
         Adds a new appointment for a given user.
 
@@ -17,17 +18,49 @@ class AppointmentsService():
             str: A success message indicating that the appointment was added successfully.
         """
         
-        # Get the formatted date
-        appointment['date'] = AppointmentsService.get_formatted_date()
-        
-        # Create a new Appointment object and add it to the database
-        new_appointment = Appointments(user_id=userId, appointments=appointment)
-        db.session.add(new_appointment)
-        db.session.commit()
-        
-        # Return success message
-        return 'appointment added successfully'
-    
+        todaysDate = AppointmentsService.get_formatted_date()
+
+        threshold = ProfileService.get_threshold(user_id=user_id)
+        appointments = Appointments.query.filter_by(user_id = user_id).all()
+
+        todays_appointments = []
+        todays_remote_appointments = []
+
+        for item in [appointment.appointments for appointment in appointments]:
+            if(item['date'] == todaysDate):
+                todays_appointments.append(item['date'])
+            if(item['date'] == todaysDate and item['remote'] == True):
+                todays_remote_appointments.append(item['date'])
+
+        today_appointments_length  = len(todays_appointments)
+        today_remote_appointments_length = len(todays_remote_appointments)
+
+        # Checks if the daily appointment threshold has been reached
+        if(today_appointments_length  == int(threshold['dailyAppointmentsThreshold'])):
+            return {'dailyAppointmentsThreshold': 'reached'}
+        # Checks if the remote threhold has been reached
+        elif(
+            today_appointments_length > today_remote_appointments_length and 
+            today_remote_appointments_length == int(threshold['remoteAppointmentsThreshold']) and 
+            role != 'businessUser'
+        ):
+            return {'remoteAppointmentsThreshold': 'reached'}
+        else:
+            print('appointment add')
+            # Get the formatted date
+            appointment['date'] = todaysDate
+
+            if(role != 'businessUser'):
+                appointment['remote'] = True
+            else:
+                appointment['remote'] = False
+            # Create a new Appointment object and add it to the database
+            new_appointment = Appointments(user_id=user_id, appointments=appointment)
+            db.session.add(new_appointment)
+            db.session.commit()
+            
+            # Return success message
+            return {'appointment': 'appointment added successfully'}
     @staticmethod
     def appointments(user_id):
         """
@@ -63,7 +96,7 @@ class AppointmentsService():
         # Convert the appointments to a list of dictionaries
         appointments = [appointment.appointments for appointment in appointments]
 
-        
+
         # Group appointments by date
         grouped_appointments = []
         for date, group in groupby(appointments, key=lambda x: x['date']):

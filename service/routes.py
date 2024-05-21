@@ -112,8 +112,15 @@ def appointments(json):
     app.logger.info('request to add appointments')
     appointment = json[0]
     user_id = json[1]
-    AppointmentsService.add(user_id, appointment)
-    emit('appointments', [AppointmentsService.appointments(user_id), user_id], broadcast=True)
+    role = json[2]
+    response = AppointmentsService.add(user_id = user_id, appointment = appointment, role = role)
+    if(response.get('remoteAppointmentsThreshold') or response.get('dailyAppointmentsThreshold')):
+        emit('threshold', response)   
+    else:
+        # Sends appointments back to business user
+        emit('appointments', [AppointmentsService.appointments(user_id), user_id], broadcast=True)
+        # Send repponse back to non business user
+        emit('schedule', 'success')
 
 
 # Appointment fields

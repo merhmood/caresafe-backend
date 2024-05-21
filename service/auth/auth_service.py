@@ -17,7 +17,7 @@ class DuplicateCredentialsError(Exception):
 class AuthService():
     def login(userInfo: dict):
         # Extract email and password from userInfo
-        email = userInfo['login']['email']
+        email = userInfo['login']['email'].lower()
         password = userInfo['login']['password']
         
        # Query the database for the user with the specified email
@@ -38,8 +38,8 @@ class AuthService():
     def signUp(userInfo: dict):
         newUser:dict = userInfo['signUp']
         
-               # Check if user already exists
-        existing_user = User.query.filter((User.email == newUser["email"]) | (User.name == newUser["name"])).first()
+        # Check if user already exists
+        existing_user = User.query.filter((User.email ==  newUser["email"].lower()) | (User.name == newUser["name"].lower())).first()
         if existing_user is not None:
             # If user exists, raise error
             raise DuplicateCredentialsError("information already exist")
@@ -48,12 +48,21 @@ class AuthService():
         hashed_password = generate_password_hash(newUser['password'], method='pbkdf2:sha256')
 
         # Create a new User object and add it to the database
-        new_user = User(name=newUser['name'], state=newUser['state'], address=newUser['address'], email=newUser['email'], password=hashed_password)
+        new_user = User(
+            name = newUser['name'].lower(), 
+            state = newUser['state'].lower(), 
+            address = newUser['address'].lower(), 
+            email = newUser['email'].lower(), 
+            password = hashed_password
+        )
         db.session.add(new_user)
         db.session.commit()
 
         ConfigureAppointmentsService.set_appointment_fields(new_user.id, ["name", "address"])
-        ProfileService.create_profile(user_id=new_user.id, name=new_user.name, address=new_user.address)
-
+        ProfileService.create_profile(
+            user_id=new_user.id, 
+            name=new_user.name, 
+            address=new_user.address
+        )
         # User created successfully
         return 'User created successfully'

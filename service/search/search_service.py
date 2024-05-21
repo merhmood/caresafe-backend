@@ -1,6 +1,7 @@
 from fuzzywuzzy import fuzz # type: ignore
 from service.auth.models import User
 from service.appointments.appointments_service import AppointmentsService
+from service.profile.profile_service import ProfileService
 from service.configure_appointments.configure_appointments_service import ConfigureAppointmentsService
 from service.appointments.appointments_service import AppointmentsService
 
@@ -20,6 +21,11 @@ class SearchService:
                     if '_sa_instance_state' in user:
                         user.pop('_sa_instance_state')
                     user.pop('password')
+                    # Replace user details with the ones from their profile details
+                    profile = ProfileService.get_profile_details(user['id'])
+                    if(profile.get('message') != 'profile missing'):
+                        user['name'] = profile['name']
+                        user['address'] = profile['address']
                     # Add the user to the results list
                     results.append(user)
                     break   
