@@ -9,7 +9,7 @@ class Profile(db.Model):
     user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id'))
     name = db.Column(db.String(150), unique=True, nullable=False)
     address = db.Column(db.String(200), nullable=False)
-    remote_appointments_threshold = db.Column(db.String(150), unique=True, nullable=False)
+    remote_appointments_threshold = db.Column(db.String(150), nullable=False)
     daily_appointments_threshold = db.Column(db.String(200), nullable=False)
 
     def __init__(self, user_id, name, address, remote_appointments_threshold, daily_appointments_threshold):

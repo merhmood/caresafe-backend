@@ -13,7 +13,23 @@ class ProfileService():
                 'remoteAppointmentsThreshold': profile.remote_appointments_threshold, 
                 'dailyAppointmentsThreshold': profile.daily_appointments_threshold
             }
-        return {'message': 'profile missing'}
+        else:
+            # Using local import to avoid circular import 
+            from service.auth.auth_service import AuthService
+            # Create profile if user profile hasn't created profile before
+            user = AuthService.get_user(user_id = user_id)
+            ProfileService.create_profile(
+                user_id=user_id, 
+                name = user['name'], 
+                address = user['address']
+            )
+            # Threshold values should match does of create profile
+            return {
+                'name': user.name, 
+                'address': user.address, 
+                'remoteAppointmentsThreshold': 20, 
+                'dailyAppointmentsThreshold': 100
+            }
     
     @staticmethod
     def create_profile(user_id, name, address):
@@ -21,8 +37,8 @@ class ProfileService():
             user_id=user_id, 
             name=name, 
             address=address, 
-            daily_appointments_threshold=100, 
-            remote_appointments_threshold=20
+            remote_appointments_threshold=20,
+            daily_appointments_threshold=100
         )
         db.session.add(new_profile)
         db.session.commit()

@@ -66,3 +66,10 @@ class AuthService():
         )
         # User created successfully
         return 'User created successfully'
+    
+    def get_user(user_id):
+        user = User.query.filter_by(id = user_id).first()
+        return {
+            'name': user.name,
+            'address': user.address
+        }

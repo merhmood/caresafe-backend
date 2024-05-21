@@ -41,7 +41,7 @@ class AppointmentsService():
         # Checks if the remote threhold has been reached
         elif(
             today_appointments_length > today_remote_appointments_length and 
-            today_remote_appointments_length == int(threshold['remoteAppointmentsThreshold']) and 
+            today_remote_appointments_length >= int(threshold['remoteAppointmentsThreshold']) and 
             role != 'businessUser'
         ):
             return {'remoteAppointmentsThreshold': 'reached'}
