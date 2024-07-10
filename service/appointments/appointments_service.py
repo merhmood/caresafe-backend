@@ -26,6 +26,7 @@ class AppointmentsService():
         todays_appointments = []
         todays_remote_appointments = []
 
+        # Filters out appointments for today and remote appointments for today
         for item in [appointment.appointments for appointment in appointments]:
             if(item['date'] == todaysDate):
                 todays_appointments.append(item['date'])

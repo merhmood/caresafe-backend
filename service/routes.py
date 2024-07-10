@@ -1,8 +1,10 @@
 import logging
+import os
 from flask import request, jsonify 
 from werkzeug.exceptions import MethodNotAllowed, NotFound, InternalServerError
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, unset_jwt_cookies, current_user 
-from flask_socketio import emit 
+from flask_socketio import emit
+from werkzeug.utils import secure_filename
 
 from . import app
 from . import socketio
@@ -12,7 +14,12 @@ from service.appointments.appointments_service import AppointmentsService
 from service.configure_appointments.configure_appointments_service import ConfigureAppointmentsService
 from service.profile.profile_service import ProfileService
 from service.auth.auth_service import AuthService, InvalidCredentialsError, DuplicateCredentialsError
+from service.consultation.consultation_service import ConsultationService
 from service.auth.models import User
+
+
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')
+
 
 # Setup the Flask-JWT-Extended extension
 jwt = JWTManager(app)
@@ -89,13 +96,29 @@ def signup():
         return jsonify({'message': e.message}), 409
     return jsonify({'msg': 'signup successful'})
 
+@app.route("/transcribe", methods=["POST"])
+@jwt_required()
+def handle_audio():
+    print("endpoint hit")
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        result = ConsultationService.transcription(current_user.id, filepath = filepath)
+        return jsonify({'transcription': result})
+    
+    
 
 # on user connection
 @socketio.on("initial-appointments")
 def get_appointments(json):
     user_id = json
     emit('appointments', [AppointmentsService.appointments(user_id), user_id], broadcast=True)
-
 
 # Appointments socket
 @socketio.on('appointments')
