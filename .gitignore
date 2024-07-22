@@ -116,3 +116,8 @@ ENV/
 /uploads
 
 **/*.wav
+
+#terraform 
+*.tfstate
+*.tfstate.backup
+.terraform/

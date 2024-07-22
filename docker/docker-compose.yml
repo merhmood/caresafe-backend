@@ -1,0 +1,37 @@
+version: "3.7"
+
+services:
+  flask:
+    build:
+      context: ../
+      dockerfile: docker/flask/Dockerfile
+    container_name: flask
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${SECRET_KEY}
+      OPENAPI_API_KEY: ${OPENAPI_API_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "5000:5000"
+
+  nginx:
+    build:
+      context: ../
+      dockerfile: docker/nginx/Dockerfile
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - flask
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - certbot-www:/var/www/certbot
+
+volumes:
+  certbot-etc:
+  certbot-var:
+  certbot-www:
